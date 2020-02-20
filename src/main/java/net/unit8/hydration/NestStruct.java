@@ -28,7 +28,7 @@ public class NestStruct {
         struct = obj;
     }
 
-    public void initializeAsMap() {
-        struct = new HashMap<>();
+    public Object getObject() {
+        return struct;
     }
 }

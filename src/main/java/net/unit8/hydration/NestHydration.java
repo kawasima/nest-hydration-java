@@ -1,8 +1,6 @@
 package net.unit8.hydration;
 
 import net.unit8.hydration.mapping.PropertyMapping;
-import net.unit8.hydration.mapping.ToOneProperty;
-import net.unit8.hydration.mapping.ValueProperty;
 
 import java.util.*;
 import java.util.function.Function;
@@ -23,13 +21,19 @@ public class NestHydration {
         return nest(data, null);
     }
 
-    public NestStruct nest(List<Map<String, Object>> data, PropertyMapping structPropToColumnMap) {
+    public Object nest(List<Map<String, Object>> data, PropertyMapping structPropToColumnMap) {
         if (data == null) {
             return null;
         }
 
-        if (isNull(structPropToColumnMap)) {
+        if (isNull(structPropToColumnMap) && !data.isEmpty()) {
             structPropToColumnMap = PropertyMapping.structPropToColumnMapFromColumnHints(data.get(0).keySet().stream().collect(Collectors.toList()));
+        }
+
+        if (isNull(structPropToColumnMap)) {
+            return null;
+        } else if (data.isEmpty()) {
+            return null;
         }
 
         NestStruct struct = new NestStruct();
@@ -38,7 +42,7 @@ public class NestHydration {
             meta.primeIdStream()
                     .forEach(primeIdColumn -> _nest(struct, row, primeIdColumn, meta));
         }
-        return struct;
+        return struct.getObject();
     }
 
     private void _nest(NestStruct struct,
@@ -75,7 +79,7 @@ public class NestHydration {
                         return new AbstractMap.SimpleImmutableEntry<String, Object>(valueProperty.getProp(), cellValue);
                     })
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+            objMeta.putCache(value, obj);
             objMeta.toManyPropStream()
                     .forEach(prop -> obj.put(prop, new ArrayList<>()));
 
@@ -109,54 +113,5 @@ public class NestHydration {
 
             objMeta.putContainingIdUsage(value, containingId);
         }
-    }
-    
-    private void _buildMeta(HydrationMeta meta,
-                            PropertyMapping structPropToColumnMap,
-                            boolean isOneOfMany,
-                            String containingColumn,
-                            String ownProp) {
-        List<String> propList = structPropToColumnMap.keys();
-
-        if (propList.isEmpty()) {
-            throw new IllegalArgumentException("invalid structPropToColumnMap format - property '" + ownProp + "' can not be an empty array");
-        }
-
-        String idProp = propList.stream()
-                .filter(prop -> structPropToColumnMap.getColumnProperty(prop).isId())
-                .findFirst()
-                .orElse(propList.get(0));
-
-        String idColumn = structPropToColumnMap.getColumnProperty(idProp).getColumn();
-
-        if (isOneOfMany) {
-            meta.addPrimeIdColumn(idColumn);
-        }
-        List<ValueProperty> valueList = new ArrayList<>();
-        List<String> toManyPropList = new ArrayList<>();
-        List<ToOneProperty> toOnePropList = new ArrayList<>();
-        
-        for (String prop : propList) {
-            if (structPropToColumnMap.hasColumnProperty(prop)) {
-                valueList.add(new ValueProperty(
-                        structPropToColumnMap.getColumnProperty(prop),
-                        prop));
-            } else if (structPropToColumnMap.hasToMany(prop)) {
-                toManyPropList.add(prop);
-                _buildMeta(meta, structPropToColumnMap.getToMany(prop), true, idColumn, prop);
-            } else if (structPropToColumnMap.hasToOne(prop)) {
-                String subIdColumn = structPropToColumnMap.getToOne(prop).keys().get(0);
-                toOnePropList.add(new ToOneProperty(prop, subIdColumn));
-                _buildMeta(meta, structPropToColumnMap.getToOne(prop), false, idColumn, prop);
-            }
-        }
-        meta.putToIdMap(idColumn, new ObjectMeta(
-                valueList,
-                toOnePropList,
-                toManyPropList,
-                containingColumn,
-                ownProp,
-                isOneOfMany,
-                structPropToColumnMap.getColumnProperty(idProp).getDefaultValue()));
     }
 }

@@ -15,7 +15,7 @@ public class ObjectMeta implements Serializable {
     private String containingColumn;
     private String ownProp;
     private boolean isOneOfMany;
-    private Map<String, Map<String, Object>> cache;
+    private Map<Object, Map<String, Object>> cache;
     private Map<Object, Set<Object>> containingIdUsage;
     private Object defaultValue;
 
@@ -27,7 +27,7 @@ public class ObjectMeta implements Serializable {
         this.ownProp = ownProp;
         this.isOneOfMany = isOneOfMany;
         this.cache = new HashMap<>();
-        this.containingIdUsage = new HashMap<>();
+        this.containingIdUsage = null;
         this.defaultValue = defaultValue;
     }
 
@@ -76,9 +76,16 @@ public class ObjectMeta implements Serializable {
     }
 
     public void putContainingIdUsage(Object value, Object containingId) {
+        if (containingIdUsage == null) {
+            containingIdUsage = new HashMap<>();
+        }
         if (!containingIdUsage.containsKey(value)) {
             containingIdUsage.put(value, new HashSet<>());
         }
         containingIdUsage.get(value).add(containingId);
+    }
+
+    public void putCache(Object value, Map<String, Object> obj) {
+        cache.put(value, obj);
     }
 }
