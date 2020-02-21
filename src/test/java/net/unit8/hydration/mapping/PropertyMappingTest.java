@@ -1,6 +1,5 @@
 package net.unit8.hydration.mapping;
 
-import net.unit8.hydration.HydrationMeta;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,26 +16,16 @@ class PropertyMappingTest {
 
     @Test
     void passedSingleDirectPropertyAsColumnList() {
-        assertThat(PropertyMapping.structPropToColumnMapFromColumnHints(List.of(
+        PropertyMapping propertyMapping = PropertyMapping.structPropToColumnMapFromColumnHints(List.of(
                 "a"
-        )));
+        ));
+        assertThat(propertyMapping).isNotNull();
+        assertThat(propertyMapping.getColumnProperty("a")).isNotNull();
+        assertThat(propertyMapping.getColumnProperty("a").getColumn()).isEqualTo("a");
     }
 
     @Test
     void passedComplexSingleBaseScenarioAsColumnListWithNumberSpecifiers() {
-        assertThat(PropertyMapping.structPropToColumnMapFromColumnHints(List.of(
-                "id___NUMBER",
-                "a_id___NUMBER",
-                "a_b",
-                "a_c__id___NUMBER",
-                "a_c__d",
-                "a_e_id___NUMBER",
-                "a_e_f"
-        ))).isNull();
-    }
-
-    @Test
-    void test() {
         PropertyMapping propertyMapping = PropertyMapping.structPropToColumnMapFromColumnHints(List.of(
                 "id___NUMBER",
                 "a_id___NUMBER",
@@ -46,6 +35,8 @@ class PropertyMappingTest {
                 "a_e_id___NUMBER",
                 "a_e_f"
         ));
-        HydrationMeta hydrationMeta = new HydrationMeta(propertyMapping);
+
+        assertThat(propertyMapping).isNotNull();
+        assertThat(propertyMapping.getColumnProperty("id")).isNotNull();
     }
 }

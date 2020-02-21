@@ -33,7 +33,7 @@ class NestHydrationTest {
 
     @Test
     void emptyData() {
-        assertThat(nestHydration.nest(List.of())).asList().isEmpty();
+        assertThat(nestHydration.nest(List.of())).isNull();
     }
 
     @Test
@@ -94,7 +94,7 @@ class NestHydrationTest {
                         put("_b__c", "c4");
                     }
                 }));
-        mapper.writeValue(System.out, nest);
+        LOG.debug(mapper.writeValueAsString(nest));
     }
 
     @Test
@@ -124,7 +124,7 @@ class NestHydrationTest {
                         put("_b___ID", 2);
                     }
                 }));
-        mapper.writeValue(System.out, nest);
+        LOG.debug(mapper.writeValueAsString(nest));
     }
 
 }
