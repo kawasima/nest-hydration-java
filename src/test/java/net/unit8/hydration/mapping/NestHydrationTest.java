@@ -10,10 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class NestHydrationTest {
     private static final Logger LOG = LoggerFactory.getLogger(NestHydrationTest.class);
@@ -37,7 +35,7 @@ class NestHydrationTest {
     }
 
     @Test
-    void hintedMappingIdTypeUnspecifiedFIrstColumnShouldBeUsedAsId() throws IOException {
+    void hintedMappingIdTypeUnspecifiedFirstColumnShouldBeUsedAsId() throws IOException {
         Object nest = nestHydration.nest(List.of(
                 new LinkedHashMap<>() {
                     {

@@ -1,6 +1,5 @@
 package net.unit8.hydration;
 
-import net.unit8.hydration.mapping.ColumnProperty;
 import net.unit8.hydration.mapping.ToOneProperty;
 import net.unit8.hydration.mapping.ValueProperty;
 

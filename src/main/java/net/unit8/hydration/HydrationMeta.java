@@ -1,11 +1,14 @@
 package net.unit8.hydration;
 
+import net.unit8.hydration.mapping.ColumnProperty;
 import net.unit8.hydration.mapping.PropertyMapping;
 import net.unit8.hydration.mapping.ToOneProperty;
 import net.unit8.hydration.mapping.ValueProperty;
 
 import java.util.*;
 import java.util.stream.Stream;
+
+import static java.util.Objects.isNull;
 
 public class HydrationMeta {
     private List<String> primeIdColumnList;
@@ -53,7 +56,7 @@ public class HydrationMeta {
         }
 
         String idProp = propList.stream()
-                .filter(prop -> structPropToColumnMap.hasColumnProperty(prop))
+                .filter(structPropToColumnMap::hasColumnProperty)
                 .filter(prop -> structPropToColumnMap.getColumnProperty(prop).isId())
                 .findFirst()
                 .orElse(propList.get(0));
@@ -76,8 +79,12 @@ public class HydrationMeta {
                 toManyPropList.add(prop);
                 buildMeta(structPropToColumnMap.getToMany(prop), true, idColumn, prop);
             } else if (structPropToColumnMap.hasToOne(prop)) {
-                String subIdColumn = structPropToColumnMap.getToOne(prop).keys().get(0);
-                toOnePropList.add(new ToOneProperty(prop, subIdColumn));
+                PropertyMapping toOneProp = structPropToColumnMap.getToOne(prop);
+                if (isNull(toOneProp)) {
+                    throw new IllegalArgumentException("invalid structPropToColumnMap format - property '" + prop + "' can not be an empty object");
+                }
+                ColumnProperty columnProperty = toOneProp.getColumnProperty(toOneProp.keys().get(0));
+                toOnePropList.add(new ToOneProperty(prop, columnProperty.getColumn()));
                 buildMeta(structPropToColumnMap.getToOne(prop), false, idColumn, prop);
             }
         }
